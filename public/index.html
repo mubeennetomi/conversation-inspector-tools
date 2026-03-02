@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netomi Webhook Inspector</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --border: #1e2330;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --error: #f43f5e;
+    --warning: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header { margin-bottom: 40px; }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: 22px;
+  }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  input[type="text"], input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+  }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 40px;
+  }
+
+  .btn:hover { background: #fff; box-shadow: 0 0 20px rgba(0,229,255,0.3); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 10px 0 0;
+    min-height: 28px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+  .status-dot.success { background: var(--success); }
+  .status-dot.error { background: var(--error); }
+
+  .error-box {
+    background: rgba(244,63,94,0.08);
+    border: 1px solid rgba(244,63,94,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: #fda4af;
+    font-size: 0.78rem;
+    margin-bottom: 16px;
+    display: none;
+    line-height: 1.6;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .badge {
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--accent);
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    padding: 8px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: rgba(0,229,255,0.4); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead {
+    background: #0d1018;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  th:hover { color: var(--accent); }
+
+  td {
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(30,35,48,0.6);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .attr-name { color: var(--accent); font-weight: 600; }
+  .attr-value { color: #c8d0e0; word-break: break-all; }
+  .attr-value.empty { color: var(--muted); font-style: italic; }
+
+  .scope-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .scope-LIFE_TIME {
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #a78bfa;
+  }
+  .scope-SESSION {
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: #34d399;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 5px;
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 0.8rem; }
+
+  @media (max-width: 640px) {
+    .form-grid, .form-row { grid-template-columns: 1fr; }
+    h1 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-dot"></div>
+      <h1>Webhook Inspector</h1>
+    </div>
+    <div class="subtitle">Netomi · Custom Attributes Viewer</div>
+  </header>
+
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Conversation ID</label>
+        <input type="text" id="conversationId" placeholder="64c9a8b0-a625-450d-..." />
+      </div>
+      <div class="field-group">
+        <label>Bot Ref ID</label>
+        <input type="text" id="botRefId" placeholder="b00c50eb-d9fb-4aa4-..." />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field-group">
+        <label>Number of Messages</label>
+        <input type="number" id="numMessages" value="10" min="1" max="100" />
+      </div>
+      <div class="field-group">
+        <label>Number of Days</label>
+        <input type="number" id="numDays" value="1" min="1" max="30" />
+      </div>
+      <button class="btn" id="fetchBtn" onclick="fetchData()">Fetch →</button>
+    </div>
+    <div class="status-bar" id="statusBar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Ready to fetch</span>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div id="resultsSection" style="display:none">
+    <div class="results-header">
+      <div class="results-title">Custom Attributes</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge" id="countBadge">0 attrs</span>
+        <button class="copy-btn" onclick="copyCSV()">Copy CSV</button>
+      </div>
+    </div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="Filter by name or value..." oninput="filterTable()" />
+    </div>
+    <div class="table-wrap">
+      <table id="attrTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Attribute Name ↕</th>
+            <th onclick="sortTable(1)">Value ↕</th>
+            <th onclick="sortTable(2)">Scope ↕</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let allAttributes = [];
+let sortDir = {};
+
+function setStatus(type, msg) {
+  document.getElementById('statusDot').className = 'status-dot ' + type;
+  document.getElementById('statusText').textContent = msg;
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.innerHTML = msg;
+  box.style.display = 'block';
+}
+
+function clearError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+async function fetchData() {
+  const convId = document.getElementById('conversationId').value.trim();
+  const botRefId = document.getElementById('botRefId').value.trim();
+  const numMessages = parseInt(document.getElementById('numMessages').value) || 10;
+  const numDays = parseInt(document.getElementById('numDays').value) || 1;
+
+  if (!convId || !botRefId) {
+    showError('Please enter both Conversation ID and Bot Ref ID.');
+    return;
+  }
+
+  clearError();
+  document.getElementById('fetchBtn').disabled = true;
+  document.getElementById('resultsSection').style.display = 'none';
+  setStatus('loading', 'Fetching...');
+
+  try {
+    // Calls the local proxy — no CORS issues
+    const response = await fetch('/proxy/webhook-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        conversationId: convId,
+        requestBody: { numberOfMessages: numMessages, numberOfDays: numDays },
+        botRefId: botRefId
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    processResponse(data);
+    setStatus('success', `Done · ${allAttributes.length} unique attributes found`);
+  } catch (err) {
+    setStatus('error', 'Request failed');
+    showError('Error: ' + err.message);
+  } finally {
+    document.getElementById('fetchBtn').disabled = false;
+  }
+}
+
+function processResponse(data) {
+  const seen = new Map();
+
+  (data.responses || []).forEach(resp => {
+    const attrs = resp?.requestPayload?.additionalAttributes?.CUSTOM_ATTRIBUTES || [];
+    attrs.forEach(attr => {
+      if (!seen.has(attr.name)) {
+        seen.set(attr.name, { name: attr.name, value: attr.value ?? '', scope: attr.scope || '' });
+      } else if (attr.value && !seen.get(attr.name).value) {
+        seen.get(attr.name).value = attr.value;
+      }
+    });
+  });
+
+  allAttributes = Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  renderTable(allAttributes);
+  document.getElementById('resultsSection').style.display = 'block';
+  document.getElementById('countBadge').textContent = allAttributes.length + ' attrs';
+}
+
+function renderTable(attrs) {
+  const tbody = document.getElementById('tableBody');
+  if (!attrs.length) {
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><div class="icon">⚠</div><p>No custom attributes found</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = attrs.map(a => `
+    <tr>
+      <td><span class="attr-name">${esc(a.name)}</span></td>
+      <td><span class="attr-value ${!a.value ? 'empty' : ''}">${a.value ? esc(a.value) : '—'}</span></td>
+      <td><span class="scope-badge scope-${a.scope}">${a.scope || '—'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  renderTable(allAttributes.filter(a =>
+    a.name.toLowerCase().includes(q) || (a.value || '').toLowerCase().includes(q)
+  ));
+}
+
+function sortTable(col) {
+  const keys = ['name', 'value', 'scope'];
+  const key = keys[col];
+  sortDir[key] = !sortDir[key];
+  const sorted = [...allAttributes].sort((a, b) => {
+    const va = (a[key] || '').toLowerCase();
+    const vb = (b[key] || '').toLowerCase();
+    return sortDir[key] ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  renderTable(sorted);
+}
+
+function copyCSV() {
+  const rows = [['Name', 'Value', 'Scope']];
+  allAttributes.forEach(a => rows.push([a.name, a.value || '', a.scope]));
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  navigator.clipboard.writeText(csv).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy CSV', 1500);
+  });
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
