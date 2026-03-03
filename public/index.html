@@ -4,420 +4,756 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Netomi Webhook Inspector</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --border: #1e2330;
-    --accent: #00e5ff;
-    --accent2: #7c3aed;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --success: #10b981;
-    --error: #f43f5e;
-    --warning: #f59e0b;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 40px 24px;
-    position: relative;
-    z-index: 1;
-  }
-
-  header { margin-bottom: 40px; }
-
-  .logo-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-  }
-
-  .logo-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.8); }
+    background: #fff;
+    color: #222;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 20px 40px;
   }
 
   h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.8rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: #fff;
+    font-size: 20px;
+    margin: 0 0 4px;
+    font-weight: bold;
   }
 
   .subtitle {
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-left: 22px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 24px;
   }
 
-  .form-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    margin-bottom: 32px;
-    position: relative;
-    overflow: hidden;
-  }
+  hr { border: none; border-top: 1px solid #ccc; margin: 20px 0; }
 
-  .form-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    font-weight: 600;
-  }
-
-  input[type="text"], input[type="number"] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    width: 100%;
-  }
-
-  input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 16px;
-    align-items: end;
-  }
-
-  .btn {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 10px 24px;
+  h2 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
     cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    height: 40px;
+    user-select: none;
   }
 
-  .btn:hover { background: #fff; box-shadow: 0 0 20px rgba(0,229,255,0.3); transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  h2:hover { color: #0066cc; }
 
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.72rem;
-    color: var(--muted);
-    padding: 10px 0 0;
-    min-height: 28px;
+  .section {
+    border: 1px solid #ccc;
+    padding: 14px 16px;
+    margin-bottom: 18px;
   }
 
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
-  .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
-  .status-dot.success { background: var(--success); }
-  .status-dot.error { background: var(--error); }
-
-  .error-box {
-    background: rgba(244,63,94,0.08);
-    border: 1px solid rgba(244,63,94,0.2);
-    border-radius: 8px;
-    padding: 14px 18px;
-    color: #fda4af;
-    font-size: 0.78rem;
-    margin-bottom: 16px;
-    display: none;
-    line-height: 1.6;
-  }
-
-  .results-header {
+  .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .results-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  .badge {
-    background: rgba(0,229,255,0.1);
-    border: 1px solid rgba(0,229,255,0.2);
-    color: var(--accent);
-    font-size: 0.65rem;
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .search-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .search-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    padding: 8px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-input:focus { border-color: rgba(0,229,255,0.4); }
-  .search-input::placeholder { color: var(--muted); }
-
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  thead {
-    background: #0d1018;
-    border-bottom: 1px solid var(--border);
-  }
-
-  th {
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    font-weight: 600;
     cursor: pointer;
     user-select: none;
-    transition: color 0.2s;
-    white-space: nowrap;
-  }
-  th:hover { color: var(--accent); }
-
-  td {
-    padding: 10px 16px;
-    font-size: 0.78rem;
-    border-bottom: 1px solid rgba(30,35,48,0.6);
-    vertical-align: middle;
   }
 
-  tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background 0.15s; }
-  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  .section-header h2 { cursor: pointer; }
 
-  .attr-name { color: var(--accent); font-weight: 600; }
-  .attr-value { color: #c8d0e0; word-break: break-all; }
-  .attr-value.empty { color: var(--muted); font-style: italic; }
-
-  .scope-badge {
-    display: inline-block;
-    font-size: 0.6rem;
-    padding: 2px 7px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .scope-LIFE_TIME {
-    background: rgba(124,58,237,0.15);
-    border: 1px solid rgba(124,58,237,0.3);
-    color: #a78bfa;
-  }
-  .scope-SESSION {
-    background: rgba(16,185,129,0.12);
-    border: 1px solid rgba(16,185,129,0.25);
-    color: #34d399;
+  label {
+    display: block;
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 3px;
+    font-weight: bold;
   }
 
-  .copy-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 5px;
-    font-size: 0.6rem;
-    padding: 4px 10px;
+  input[type="text"],
+  input[type="number"],
+  select {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    padding: 4px 6px;
+    border: 1px solid #aaa;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    color: #222;
+  }
+
+  input:focus, select:focus { outline: 2px solid #0066cc; outline-offset: 0; }
+
+  .row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    align-items: flex-end;
+  }
+
+  .field { flex: 1; }
+  .field-sm { width: 120px; flex: none; }
+
+  button {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    padding: 5px 16px;
+    border: 1px solid #aaa;
+    background: #f0f0f0;
     cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    transition: all 0.15s;
+    color: #222;
   }
-  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
+  button:hover { background: #e0e0e0; border-color: #888; }
+  button:active { background: #d0d0d0; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .status {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
   }
-  .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
-  .empty-state p { font-size: 0.8rem; }
+  .status.error { color: #cc0000; }
+  .status.success { color: #007700; }
 
-  @media (max-width: 640px) {
-    .form-grid, .form-row { grid-template-columns: 1fr; }
-    h1 { font-size: 1.3rem; }
+  /* Profiles table */
+  .profiles-body { margin-top: 14px; }
+
+  .profiles-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  .profiles-table th {
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .profiles-table td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    vertical-align: top;
+  }
+
+  .profiles-table tr:hover td { background: #fafafa; }
+
+  .env-row { margin-bottom: 3px; font-size: 12px; color: #555; }
+  .env-row:last-child { margin-bottom: 0; }
+  .env-label { font-weight: bold; color: #333; margin-right: 6px; }
+  .ref-empty { color: #aaa; font-style: italic; }
+
+  .del-btn {
+    font-size: 11px;
+    padding: 2px 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #aa0000;
+    cursor: pointer;
+  }
+  .del-btn:hover { background: #fff0f0; border-color: #aa0000; }
+
+  /* Add profile form */
+  .add-form { background: #fafafa; border: 1px solid #ddd; padding: 12px; margin-top: 4px; }
+  .add-form-title { font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #444; }
+
+  .add-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .add-row .field { flex: 1; }
+
+  .profile-msg { font-size: 12px; margin-top: 8px; }
+  .profile-msg.error { color: #cc0000; }
+  .profile-msg.success { color: #007700; }
+
+  /* Picker */
+  .picker-hint { font-size: 11px; color: #888; margin-top: 3px; }
+
+  .profile-picker { position: relative; }
+
+  #pickerDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #aaa;
+    border-top: none;
+    background: #fff;
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .picker-option {
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .picker-option:last-child { border-bottom: none; }
+  .picker-option:hover { background: #f0f0f0; }
+  .picker-option.no-results { color: #aaa; cursor: default; font-style: italic; }
+  .picker-option.clear-opt { color: #888; border-bottom: 1px solid #ddd; }
+
+  /* Results */
+  .results-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .results-meta span { font-size: 12px; color: #555; }
+
+  .search-row { margin-bottom: 10px; }
+  .search-row input { max-width: 360px; }
+
+  .attr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .attr-table th {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .attr-table th:hover { background: #e8e8e8; }
+
+  .attr-table td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    vertical-align: top;
+    word-break: break-all;
+  }
+
+  .attr-table tr:nth-child(even) td { background: #fafafa; }
+  .attr-table tr:hover td { background: #f0f8ff; }
+
+  .scope-tag {
+    font-size: 11px;
+    padding: 1px 6px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    color: #444;
+  }
+
+  .empty { color: #aaa; font-style: italic; }
+
+  .tabs { margin-bottom: 10px; }
+  .tab-btn {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    padding: 4px 14px;
+    border: 1px solid #aaa;
+    background: #f0f0f0;
+    cursor: pointer;
+    color: #222;
+    margin-right: -1px;
+  }
+  .tab-btn.active { background: #fff; border-bottom-color: #fff; font-weight: bold; }
+  .tab-btn:hover:not(.active) { background: #e0e0e0; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  #rawJsonPanel {
+    border: 1px solid #ccc;
+    background: #fafafa;
+    padding: 12px;
+    overflow: auto;
+    max-height: 600px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  #rawJsonPanel details { margin: 0; }
+
+  #rawJsonPanel summary {
+    cursor: pointer;
+    list-style: none;
+    outline: none;
+    padding: 0;
+    display: block;
+  }
+  #rawJsonPanel summary::-webkit-details-marker { display: none; }
+  #rawJsonPanel summary:hover { background: #efefef; }
+
+  #rawJsonPanel details > summary::before { content: '▶ '; font-size: 10px; color: #888; }
+  #rawJsonPanel details[open] > summary::before { content: '▼ '; }
+
+  .jt-line { padding: 0; }
+  .jt-indent { padding-left: 22px; border-left: 1px dotted #ccc; margin-left: 5px; }
+  .jt-meta { color: #999; font-style: italic; }
+  .jt-index { color: #555; }
+  .jt-bracket { color: #555; }
+  .jt-match { background: #ffff00; }
+  .jt-match-current { background: #ff9900; outline: 1px solid #cc6600; }
+
+  .json-key    { color: #881391; }
+  .json-string { color: #1a6e1a; }
+  .json-number { color: #0000cc; }
+  .json-bool   { color: #aa5500; font-weight: bold; }
+  .json-null   { color: #999; font-style: italic; }
+
+  .raw-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: #666;
   }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <header>
-    <div class="logo-row">
-      <div class="logo-dot"></div>
-      <h1>Webhook Inspector</h1>
-    </div>
-    <div class="subtitle">Netomi · Custom Attributes Viewer</div>
-  </header>
+<h1>Netomi Webhook Inspector</h1>
+<div class="subtitle">Custom Attributes Viewer</div>
 
-  <div class="form-card">
-    <div class="form-grid">
-      <div class="field-group">
-        <label>Conversation ID</label>
-        <input type="text" id="conversationId" placeholder="64c9a8b0-a625-450d-..." />
-      </div>
-      <div class="field-group">
-        <label>Bot Ref ID</label>
-        <input type="text" id="botRefId" placeholder="b00c50eb-d9fb-4aa4-..." />
+<!-- Bot Profiles -->
+<div class="section">
+  <div class="section-header" onclick="toggleProfiles()">
+    <h2>&#9654; Bot Profiles &nbsp;<span id="profileCountBadge" style="font-weight:normal;font-size:12px;color:#666">(0 saved)</span></h2>
+  </div>
+
+  <div id="profilesBody" style="display:none">
+    <div class="profiles-body">
+      <div id="profilesList"></div>
+
+      <div class="add-form">
+        <div class="add-form-title">Add New Profile</div>
+        <div class="add-row">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="pName" placeholder="e.g. Acme Bot" />
+          </div>
+          <div class="field">
+            <label>Bot ID</label>
+            <input type="text" id="pBotId" placeholder="bot-id" />
+          </div>
+        </div>
+        <div class="add-row">
+          <div class="field">
+            <label>Sandbox Bot Ref ID</label>
+            <input type="text" id="pSandbox" placeholder="sandbox ref id (optional)" />
+          </div>
+          <div class="field">
+            <label>Live Bot Ref ID</label>
+            <input type="text" id="pLive" placeholder="live ref id (optional)" />
+          </div>
+        </div>
+        <button onclick="addProfile()">Add Profile</button>
+        <div class="profile-msg" id="profileMsg" style="display:none"></div>
       </div>
     </div>
-    <div class="form-row">
-      <div class="field-group">
-        <label>Number of Messages</label>
-        <input type="number" id="numMessages" value="10" min="1" max="100" />
+  </div>
+</div>
+
+<!-- Fetch Form -->
+<div class="section">
+  <h2 style="cursor:default;margin-bottom:12px">Fetch Conversation</h2>
+
+  <div class="row" style="margin-bottom:10px">
+    <div class="field">
+      <label>Select from Profiles (optional)</label>
+      <div class="profile-picker">
+        <input type="text" id="pickerInput" placeholder="— Type to search profiles —"
+               autocomplete="off"
+               oninput="filterPicker()"
+               onfocus="openPicker()" />
+        <div id="pickerDropdown"></div>
       </div>
-      <div class="field-group">
-        <label>Number of Days</label>
-        <input type="number" id="numDays" value="1" min="1" max="30" />
-      </div>
-      <button class="btn" id="fetchBtn" onclick="fetchData()">Fetch →</button>
-    </div>
-    <div class="status-bar" id="statusBar">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">Ready to fetch</span>
+      <div class="picker-hint">Selecting a profile auto-fills the Bot Ref ID below</div>
     </div>
   </div>
 
-  <div class="error-box" id="errorBox"></div>
+  <div class="row">
+    <div class="field">
+      <label>Conversation ID</label>
+      <input type="text" id="conversationId" placeholder="64c9a8b0-a625-450d-..." />
+    </div>
+    <div class="field">
+      <label>Bot Ref ID</label>
+      <input type="text" id="botRefId" placeholder="b00c50eb-d9fb-4aa4-..." />
+    </div>
+  </div>
 
-  <div id="resultsSection" style="display:none">
-    <div class="results-header">
-      <div class="results-title">Custom Attributes</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="badge" id="countBadge">0 attrs</span>
-        <button class="copy-btn" onclick="copyCSV()">Copy CSV</button>
-      </div>
+  <div class="row" style="align-items:flex-end">
+    <div class="field-sm">
+      <label>No. of Messages</label>
+      <input type="number" id="numMessages" value="10" min="1" max="100" />
+    </div>
+    <div class="field-sm">
+      <label>No. of Days</label>
+      <input type="number" id="numDays" value="1" min="1" max="30" />
+    </div>
+    <button id="fetchBtn" onclick="fetchData()">Fetch</button>
+  </div>
+
+  <div class="status" id="statusText">Ready</div>
+</div>
+
+<!-- Error -->
+<div class="status error" id="errorBox" style="display:none;margin-bottom:14px"></div>
+
+<!-- Results -->
+<div id="resultsSection" style="display:none">
+  <div class="tabs">
+    <button class="tab-btn active" id="tabAttrs" onclick="switchTab('attrs')">Custom Attributes</button>
+    <button class="tab-btn" id="tabRaw" onclick="switchTab('raw')">Raw JSON</button>
+  </div>
+
+  <!-- Custom Attributes tab -->
+  <div class="tab-panel active" id="panelAttrs">
+    <div class="results-meta">
+      <span id="countBadge">0 attrs</span>
+      <button onclick="copyCSV()">Copy CSV</button>
     </div>
     <div class="search-row">
-      <input type="text" class="search-input" id="searchInput" placeholder="Filter by name or value..." oninput="filterTable()" />
+      <input type="text" id="searchInput" placeholder="Filter by name or value..." oninput="filterTable()" />
     </div>
-    <div class="table-wrap">
-      <table id="attrTable">
-        <thead>
-          <tr>
-            <th onclick="sortTable(0)">Attribute Name ↕</th>
-            <th onclick="sortTable(1)">Value ↕</th>
-            <th onclick="sortTable(2)">Scope ↕</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
+    <table class="attr-table" id="attrTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Attribute Name &#8597;</th>
+          <th onclick="sortTable(1)">Value &#8597;</th>
+          <th onclick="sortTable(2)">Scope &#8597;</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
   </div>
 
+  <!-- Raw JSON tab -->
+  <div class="tab-panel" id="panelRaw">
+    <div class="raw-toolbar">
+      <button onclick="copyRaw()">Copy JSON</button>
+      <button onclick="collapseRaw()">Collapse All</button>
+      <button onclick="expandRaw()">Expand All</button>
+      <input type="text" id="jsonSearch" placeholder="Search in JSON..."
+             oninput="searchRaw()" onkeydown="handleSearchKey(event)"
+             style="font-family:Arial,sans-serif;font-size:12px;padding:3px 7px;border:1px solid #aaa;width:200px" />
+      <button onclick="prevMatch()" title="Previous match (Shift+Enter)">▲</button>
+      <button onclick="nextMatch()" title="Next match (Enter)">▼</button>
+      <span id="jsonMatchCount" style="font-size:11px;color:#888"></span>
+    </div>
+    <div id="rawJsonPanel"></div>
+  </div>
 </div>
 
 <script>
+// ── Profiles ──────────────────────────────────────────
+
+const STORAGE_KEY = 'netomi_bot_profiles';
+
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+}
+
+function toggleProfiles() {
+  const body = document.getElementById('profilesBody');
+  const header = document.querySelector('#profilesBody').previousElementSibling.querySelector('h2');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  header.innerHTML = (open ? '&#9654;' : '&#9660;') +
+    ' Bot Profiles &nbsp;<span style="font-weight:normal;font-size:12px;color:#666" id="profileCountBadge">(' + loadProfiles().length + ' saved)</span>';
+}
+
+function renderProfiles() {
+  const profiles = loadProfiles();
+  const container = document.getElementById('profilesList');
+  const badge = document.getElementById('profileCountBadge');
+  if (badge) badge.textContent = '(' + profiles.length + ' saved)';
+
+  if (!profiles.length) {
+    container.innerHTML = '<p style="color:#888;font-size:12px;margin:0 0 12px">No profiles saved yet.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="profiles-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Bot ID</th>
+          <th>Ref IDs</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${profiles.map((p, i) => `
+          <tr>
+            <td><strong>${esc(p.name)}</strong></td>
+            <td style="color:#555">${esc(p.botId)}</td>
+            <td>
+              <div class="env-row"><span class="env-label">Sandbox:</span>${p.sandbox ? esc(p.sandbox) : '<span class="ref-empty">not set</span>'}</div>
+              <div class="env-row"><span class="env-label">Live:</span>${p.live ? esc(p.live) : '<span class="ref-empty">not set</span>'}</div>
+            </td>
+            <td><button class="del-btn" onclick="deleteProfile(${i})">Delete</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+let pickerItems = [];
+let pickerSelectedValue = '';
+
+function updateProfileSelect() {
+  const profiles = loadProfiles();
+  pickerItems = [];
+  profiles.forEach((p, i) => {
+    if (p.sandbox) pickerItems.push({ label: p.name + ' — Sandbox', value: i + ':sandbox' });
+    if (p.live)    pickerItems.push({ label: p.name + ' — Live',    value: i + ':live'    });
+  });
+}
+
+function openPicker() {
+  filterPicker();
+}
+
+function filterPicker() {
+  const q = document.getElementById('pickerInput').value.toLowerCase();
+  const dropdown = document.getElementById('pickerDropdown');
+
+  const matches = pickerItems.filter(item => item.label.toLowerCase().includes(q));
+
+  let html = '';
+  if (pickerSelectedValue) {
+    html += `<div class="picker-option clear-opt" onmousedown="clearPicker()">✕ Clear selection</div>`;
+  }
+  if (!matches.length) {
+    html += `<div class="picker-option no-results">No profiles match</div>`;
+  } else {
+    matches.forEach(item => {
+      html += `<div class="picker-option" onmousedown="selectPickerItem('${item.value}', '${item.label.replace(/'/g, "\\'")}')">${esc(item.label)}</div>`;
+    });
+  }
+
+  dropdown.innerHTML = html;
+  dropdown.style.display = 'block';
+}
+
+function selectPickerItem(value, label) {
+  pickerSelectedValue = value;
+  document.getElementById('pickerInput').value = label;
+  document.getElementById('pickerDropdown').style.display = 'none';
+  applyProfile();
+}
+
+function clearPicker() {
+  pickerSelectedValue = '';
+  document.getElementById('pickerInput').value = '';
+  document.getElementById('pickerDropdown').style.display = 'none';
+}
+
+function applyProfile() {
+  if (!pickerSelectedValue) return;
+  const [idx, env] = pickerSelectedValue.split(':');
+  const p = loadProfiles()[parseInt(idx)];
+  if (!p) return;
+  document.getElementById('botRefId').value = (env === 'sandbox' ? p.sandbox : p.live) || '';
+}
+
+function addProfile() {
+  const name    = document.getElementById('pName').value.trim();
+  const botId   = document.getElementById('pBotId').value.trim();
+  const sandbox = document.getElementById('pSandbox').value.trim();
+  const live    = document.getElementById('pLive').value.trim();
+  const msg     = document.getElementById('profileMsg');
+
+  msg.className = 'profile-msg';
+  msg.style.display = 'none';
+
+  if (!name || !botId) {
+    msg.textContent = 'Name and Bot ID are required.';
+    msg.className = 'profile-msg error';
+    msg.style.display = 'block';
+    return;
+  }
+
+  const profiles = loadProfiles();
+  if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    msg.textContent = 'A profile named "' + name + '" already exists.';
+    msg.className = 'profile-msg error';
+    msg.style.display = 'block';
+    return;
+  }
+
+  profiles.push({ name, botId, sandbox, live });
+  saveProfiles(profiles);
+
+  ['pName','pBotId','pSandbox','pLive'].forEach(id => document.getElementById(id).value = '');
+
+  msg.textContent = 'Profile "' + name + '" added.';
+  msg.className = 'profile-msg success';
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 2500);
+
+  renderProfiles();
+  updateProfileSelect();
+}
+
+function deleteProfile(index) {
+  const profiles = loadProfiles();
+  profiles.splice(index, 1);
+  saveProfiles(profiles);
+  renderProfiles();
+  updateProfileSelect();
+}
+
+// ── Fetch ──────────────────────────────────────────────
+
 let allAttributes = [];
 let sortDir = {};
+let rawData = null;
 
-function setStatus(type, msg) {
-  document.getElementById('statusDot').className = 'status-dot ' + type;
-  document.getElementById('statusText').textContent = msg;
+function switchTab(tab) {
+  document.getElementById('panelAttrs').classList.toggle('active', tab === 'attrs');
+  document.getElementById('panelRaw').classList.toggle('active', tab === 'raw');
+  document.getElementById('tabAttrs').classList.toggle('active', tab === 'attrs');
+  document.getElementById('tabRaw').classList.toggle('active', tab === 'raw');
+}
+
+let searchQuery = '';
+let matchIndex = 0;
+
+function handleSearchKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.shiftKey ? prevMatch() : nextMatch();
+  }
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hlMatch(str, query) {
+  if (!query) return esc(str);
+  return str.split(new RegExp('(' + escapeRegex(query) + ')', 'gi'))
+    .map((p, i) => i % 2 === 1 ? '<mark class="jt-match">' + esc(p) + '</mark>' : esc(p))
+    .join('');
+}
+
+function buildTree(value, key, query) {
+  const keyPart = key === null ? ''
+    : typeof key === 'number'
+      ? `<span class="jt-index">[${key}]</span> `
+      : `<span class="json-key">"${hlMatch(key, query)}"</span>: `;
+  const openAttr = query ? ' open' : ' open';
+
+  if (value === null)
+    return `<div class="jt-line">${keyPart}<span class="json-null">null</span></div>`;
+  if (typeof value === 'boolean')
+    return `<div class="jt-line">${keyPart}<span class="json-bool">${value}</span></div>`;
+  if (typeof value === 'number')
+    return `<div class="jt-line">${keyPart}<span class="json-number">${hlMatch(String(value), query)}</span></div>`;
+  if (typeof value === 'string') {
+    const raw = value.length > 300 ? value.slice(0, 300) + '…' : value;
+    return `<div class="jt-line">${keyPart}<span class="json-string">"${hlMatch(raw, query)}"</span></div>`;
+  }
+
+  if (Array.isArray(value)) {
+    if (!value.length)
+      return `<div class="jt-line">${keyPart}<span class="jt-bracket">[]</span></div>`;
+    const items = value.map((v, i) => buildTree(v, i, query)).join('');
+    return `<details${openAttr}><summary>${keyPart}<span class="jt-meta">[ ${value.length} items ]</span></summary><div class="jt-indent">${items}</div></details>`;
+  }
+
+  if (typeof value === 'object') {
+    const keys = Object.keys(value);
+    if (!keys.length)
+      return `<div class="jt-line">${keyPart}<span class="jt-bracket">{}</span></div>`;
+    const items = keys.map(k => buildTree(value[k], k, query)).join('');
+    return `<details${openAttr}><summary>${keyPart}<span class="jt-meta">{ ${keys.length} keys }</span></summary><div class="jt-indent">${items}</div></details>`;
+  }
+
+  return '';
+}
+
+function renderRawJson() {
+  if (!rawData) return;
+  document.getElementById('rawJsonPanel').innerHTML = buildTree(rawData, null, searchQuery);
+}
+
+function searchRaw() {
+  searchQuery = document.getElementById('jsonSearch').value;
+  matchIndex = 0;
+  renderRawJson();
+  updateMatchNav();
+}
+
+function updateMatchNav() {
+  const marks = Array.from(document.querySelectorAll('#rawJsonPanel mark.jt-match'));
+  const el = document.getElementById('jsonMatchCount');
+
+  if (!searchQuery) { el.textContent = ''; return; }
+  if (!marks.length) { el.textContent = 'No matches'; return; }
+
+  if (matchIndex >= marks.length) matchIndex = 0;
+  if (matchIndex < 0) matchIndex = marks.length - 1;
+
+  marks.forEach((m, i) => m.classList.toggle('jt-match-current', i === matchIndex));
+  marks[matchIndex].scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+  el.textContent = (matchIndex + 1) + ' / ' + marks.length;
+}
+
+function nextMatch() {
+  const marks = document.querySelectorAll('#rawJsonPanel mark.jt-match');
+  if (!marks.length) return;
+  matchIndex = (matchIndex + 1) % marks.length;
+  updateMatchNav();
+}
+
+function prevMatch() {
+  const marks = document.querySelectorAll('#rawJsonPanel mark.jt-match');
+  if (!marks.length) return;
+  matchIndex = (matchIndex - 1 + marks.length) % marks.length;
+  updateMatchNav();
+}
+
+function copyRaw() {
+  navigator.clipboard.writeText(JSON.stringify(rawData, null, 2)).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy JSON', 1500);
+  });
+}
+
+function collapseRaw() {
+  document.querySelectorAll('#rawJsonPanel details').forEach(d => d.open = false);
+}
+
+function expandRaw() {
+  document.querySelectorAll('#rawJsonPanel details').forEach(d => d.open = true);
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('statusText');
+  el.textContent = msg;
+  el.className = 'status' + (cls ? ' ' + cls : '');
 }
 
 function showError(msg) {
   const box = document.getElementById('errorBox');
-  box.innerHTML = msg;
+  box.textContent = msg;
   box.style.display = 'block';
 }
 
@@ -426,10 +762,10 @@ function clearError() {
 }
 
 async function fetchData() {
-  const convId = document.getElementById('conversationId').value.trim();
-  const botRefId = document.getElementById('botRefId').value.trim();
+  const convId      = document.getElementById('conversationId').value.trim();
+  const botRefId    = document.getElementById('botRefId').value.trim();
   const numMessages = parseInt(document.getElementById('numMessages').value) || 10;
-  const numDays = parseInt(document.getElementById('numDays').value) || 1;
+  const numDays     = parseInt(document.getElementById('numDays').value) || 1;
 
   if (!convId || !botRefId) {
     showError('Please enter both Conversation ID and Bot Ref ID.');
@@ -439,10 +775,9 @@ async function fetchData() {
   clearError();
   document.getElementById('fetchBtn').disabled = true;
   document.getElementById('resultsSection').style.display = 'none';
-  setStatus('loading', 'Fetching...');
+  setStatus('Fetching...');
 
   try {
-    // Calls the local proxy — no CORS issues
     const response = await fetch('/proxy/webhook-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -455,14 +790,14 @@ async function fetchData() {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${response.status}`);
+      throw new Error(err.error || 'HTTP ' + response.status);
     }
 
     const data = await response.json();
     processResponse(data);
-    setStatus('success', `Done · ${allAttributes.length} unique attributes found`);
+    setStatus('Done. ' + allAttributes.length + ' unique attributes found.', 'success');
   } catch (err) {
-    setStatus('error', 'Request failed');
+    setStatus('Request failed.', 'error');
     showError('Error: ' + err.message);
   } finally {
     document.getElementById('fetchBtn').disabled = false;
@@ -470,6 +805,8 @@ async function fetchData() {
 }
 
 function processResponse(data) {
+  rawData = data;
+  renderRawJson();
   const seen = new Map();
 
   (data.responses || []).forEach(resp => {
@@ -486,20 +823,20 @@ function processResponse(data) {
   allAttributes = Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
   renderTable(allAttributes);
   document.getElementById('resultsSection').style.display = 'block';
-  document.getElementById('countBadge').textContent = allAttributes.length + ' attrs';
+  document.getElementById('countBadge').textContent = allAttributes.length + ' attributes';
 }
 
 function renderTable(attrs) {
   const tbody = document.getElementById('tableBody');
   if (!attrs.length) {
-    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><div class="icon">⚠</div><p>No custom attributes found</p></div></td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="3" style="color:#aaa;text-align:center;padding:20px">No custom attributes found.</td></tr>';
     return;
   }
   tbody.innerHTML = attrs.map(a => `
     <tr>
-      <td><span class="attr-name">${esc(a.name)}</span></td>
-      <td><span class="attr-value ${!a.value ? 'empty' : ''}">${a.value ? esc(a.value) : '—'}</span></td>
-      <td><span class="scope-badge scope-${a.scope}">${a.scope || '—'}</span></td>
+      <td>${esc(a.name)}</td>
+      <td>${a.value ? esc(a.value) : '<span class="empty">—</span>'}</td>
+      <td><span class="scope-tag">${a.scope || '—'}</span></td>
     </tr>
   `).join('');
 }
@@ -526,10 +863,10 @@ function sortTable(col) {
 function copyCSV() {
   const rows = [['Name', 'Value', 'Scope']];
   allAttributes.forEach(a => rows.push([a.name, a.value || '', a.scope]));
-  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const csv = rows.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
   navigator.clipboard.writeText(csv).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = '✓ Copied';
+    const btn = event.target;
+    btn.textContent = 'Copied!';
     setTimeout(() => btn.textContent = 'Copy CSV', 1500);
   });
 }
@@ -537,6 +874,18 @@ function copyCSV() {
 function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ── Init ──────────────────────────────────────────────
+
+renderProfiles();
+updateProfileSelect();
+if (loadProfiles().length > 0) toggleProfiles();
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.profile-picker')) {
+    document.getElementById('pickerDropdown').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
