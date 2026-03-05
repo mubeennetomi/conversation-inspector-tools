@@ -312,51 +312,59 @@
     font-size: 12px;
     color: #666;
   }
+
+  /* Tool nav */
+  .tool-nav {
+    display: flex;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 20px;
+    gap: 0;
+  }
+
+  .tool-nav-btn {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 18px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+    position: relative;
+    bottom: -2px;
+  }
+
+  .tool-nav-btn:hover { color: #222; background: #f5f5f5; }
+
+  .tool-nav-btn.active {
+    color: #222;
+    background: #fff;
+    border-color: #ccc;
+    border-bottom-color: #fff;
+  }
+
+  .tool-panel { display: none; }
+  .tool-panel.active { display: block; }
+
+  .tool-desc {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 16px;
+  }
 </style>
 </head>
 <body>
 
 <h1>Netomi Webhook Inspector</h1>
-<div class="subtitle">Custom Attributes Viewer</div>
 
-<!-- Bot Profiles -->
-<div class="section">
-  <div class="section-header" onclick="toggleProfiles()">
-    <h2>&#9654; Bot Profiles &nbsp;<span id="profileCountBadge" style="font-weight:normal;font-size:12px;color:#666">(0 saved)</span></h2>
-  </div>
-
-  <div id="profilesBody" style="display:none">
-    <div class="profiles-body">
-      <div id="profilesList"></div>
-
-      <div class="add-form">
-        <div class="add-form-title">Add New Profile</div>
-        <div class="add-row">
-          <div class="field">
-            <label>Name</label>
-            <input type="text" id="pName" placeholder="e.g. Acme Bot" />
-          </div>
-          <div class="field">
-            <label>Bot ID</label>
-            <input type="text" id="pBotId" placeholder="bot-id" />
-          </div>
-        </div>
-        <div class="add-row">
-          <div class="field">
-            <label>Sandbox Bot Ref ID</label>
-            <input type="text" id="pSandbox" placeholder="sandbox ref id (optional)" />
-          </div>
-          <div class="field">
-            <label>Live Bot Ref ID</label>
-            <input type="text" id="pLive" placeholder="live ref id (optional)" />
-          </div>
-        </div>
-        <button onclick="addProfile()">Add Profile</button>
-        <div class="profile-msg" id="profileMsg" style="display:none"></div>
-      </div>
-    </div>
-  </div>
+<div class="tool-nav">
+  <button class="tool-nav-btn active" onclick="switchTool('customAttrs')">Custom Attributes</button>
 </div>
+
+<!-- Tool: Custom Attributes -->
+<div class="tool-panel active" id="toolCustomAttrs">
+<div class="tool-desc">Inspect custom attributes from a conversation's webhook history.</div>
 
 <!-- Fetch Form -->
 <div class="section">
@@ -400,6 +408,47 @@
   </div>
 
   <div class="status" id="statusText">Ready</div>
+</div>
+
+</div><!-- /toolCustomAttrs -->
+
+<!-- Bot Profiles (secondary) -->
+<div style="margin-bottom:18px">
+  <a href="#" onclick="toggleProfiles();return false;" id="profilesToggleLink"
+     style="font-size:12px;color:#666;text-decoration:none;border-bottom:1px dashed #aaa">
+    &#9654; Bot Profiles <span id="profileCountBadge">(0 saved)</span>
+  </a>
+  <div id="profilesBody" style="display:none;margin-top:10px;border:1px solid #ddd;padding:12px;background:#fafafa">
+    <div class="profiles-body">
+      <div id="profilesList"></div>
+
+      <div class="add-form">
+        <div class="add-form-title">Add New Profile</div>
+        <div class="add-row">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="pName" placeholder="e.g. Acme Bot" />
+          </div>
+          <div class="field">
+            <label>Bot ID</label>
+            <input type="text" id="pBotId" placeholder="bot-id" />
+          </div>
+        </div>
+        <div class="add-row">
+          <div class="field">
+            <label>Sandbox Bot Ref ID</label>
+            <input type="text" id="pSandbox" placeholder="sandbox ref id (optional)" />
+          </div>
+          <div class="field">
+            <label>Live Bot Ref ID</label>
+            <input type="text" id="pLive" placeholder="live ref id (optional)" />
+          </div>
+        </div>
+        <button onclick="addProfile()">Add Profile</button>
+        <div class="profile-msg" id="profileMsg" style="display:none"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Error -->
@@ -451,7 +500,19 @@
 </div>
 
 <script>
-// ── Profiles ──────────────────────────────────────────
+// ── Tool nav ───────────────────────────────────────────
+
+const toolPanels = { customAttrs: 'toolCustomAttrs' };
+
+function switchTool(tool) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById(toolPanels[tool]);
+  if (panel) panel.classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Profiles ───────────────────────────────────────────
 
 const STORAGE_KEY = 'netomi_bot_profiles';
 
@@ -466,11 +527,11 @@ function saveProfiles(profiles) {
 
 function toggleProfiles() {
   const body = document.getElementById('profilesBody');
-  const header = document.querySelector('#profilesBody').previousElementSibling.querySelector('h2');
+  const link = document.getElementById('profilesToggleLink');
   const open = body.style.display !== 'none';
   body.style.display = open ? 'none' : 'block';
-  header.innerHTML = (open ? '&#9654;' : '&#9660;') +
-    ' Bot Profiles &nbsp;<span style="font-weight:normal;font-size:12px;color:#666" id="profileCountBadge">(' + loadProfiles().length + ' saved)</span>';
+  const arrow = open ? '&#9654;' : '&#9660;';
+  link.innerHTML = arrow + ' Bot Profiles <span id="profileCountBadge">(' + loadProfiles().length + ' saved)</span>';
 }
 
 function renderProfiles() {
@@ -478,6 +539,11 @@ function renderProfiles() {
   const container = document.getElementById('profilesList');
   const badge = document.getElementById('profileCountBadge');
   if (badge) badge.textContent = '(' + profiles.length + ' saved)';
+  const link = document.getElementById('profilesToggleLink');
+  if (link) {
+    const open = document.getElementById('profilesBody').style.display !== 'none';
+    link.innerHTML = (open ? '&#9660;' : '&#9654;') + ' Bot Profiles <span id="profileCountBadge">(' + profiles.length + ' saved)</span>';
+  }
 
   if (!profiles.length) {
     container.innerHTML = '<p style="color:#888;font-size:12px;margin:0 0 12px">No profiles saved yet.</p>';
@@ -665,8 +731,7 @@ function buildTree(value, key, query) {
   if (typeof value === 'number')
     return `<div class="jt-line">${keyPart}<span class="json-number">${hlMatch(String(value), query)}</span></div>`;
   if (typeof value === 'string') {
-    const raw = value.length > 300 ? value.slice(0, 300) + '…' : value;
-    return `<div class="jt-line">${keyPart}<span class="json-string">"${hlMatch(raw, query)}"</span></div>`;
+    return `<div class="jt-line">${keyPart}<span class="json-string">"${hlMatch(value, query)}"</span></div>`;
   }
 
   if (Array.isArray(value)) {
@@ -879,7 +944,6 @@ function esc(str) {
 
 renderProfiles();
 updateProfileSelect();
-if (loadProfiles().length > 0) toggleProfiles();
 
 document.addEventListener('click', e => {
   if (!e.target.closest('.profile-picker')) {
